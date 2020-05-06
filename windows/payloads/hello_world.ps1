@@ -1,2 +1,2 @@
 Add-Type -AssemblyName PresentationCore,PresentationFramework
-[System.Windows.MessageBox]::Show("POC")
+[System.Windows.MessageBox]::Show("Hello word!")
