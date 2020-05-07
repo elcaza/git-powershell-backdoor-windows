@@ -17,11 +17,43 @@ El entorno en que ha sido probado este script fue
 + Windows 10
 + Debian 10
 
-# Anexo 1: ScheduledTask en Windows
+# Anexo 1: Ejecución de Scripts de powershell en modo Bypass
+Powershell en Windows 10 tiene por defecto una politica de ejecución de scripts. 
+
+Para consultar dicha politica
+``` powershell
+Get-ExecutionPolicy -list
+```
+
+Modos de la politica
++ `Restricted` Opción predefinida en Windows 10. No permite ejecutar scripts, ni archivos de configuración .ps1xml u otros similares, sino solo comandos.
++ `Allsigned` Permite ejecución de scripts y archivos de configuración firmados por un editor de confianza. Esto incluye los escritos en el equipo local. Conlleva el riesgo de ejecutar un script que sea malintencionado, a pesar de haber sido firmado.
++ `RemoteSigned` RemoteSigned: permite ejecutar scripts powershell y archivos de configuración descargados de internet (de cualquier forma). Conlleva cierto riesto, dado que no solicita firmas digitales para scripts diseñados en el equipo local. Para ejecutar scripts descargados de internet (sin firmar) es necesario usar la opción Unblock-File.
++ `Unrestricted` permite ejecutar cualquier script o archivo de configuración, esté firmado o no. Muestra advertencia al usuario.
++ `Bypass` similar al anterior, pero además de no bloquear tampoco alerta de los riesgos. Este modo se suele utilizar en integraciones de Powershell con otras aplicaciones, en las que funciona en una capa inferior, dado que dichas aplicaciones cuentan con un modelo de seguridad propio.
++ `Undefined` no se establece directiva alguna. Esto se traduce normalmente en “Restricted”, suponiendo que en todos los ámbitos se haya dejado sin definir.
+
+Para cambiar la politica de ejecución de los scripts
+``` powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
+Para cambiar la politica de ejecución de los scripts
+``` powershell
+Set-ExecutionPolicy RemoteSigned -Force
+```
++ Este modo forza el cambio
+
+Para ejecutar un script sin en modo Bypass
+``` powershell
+powershell –ExecutionPolicy Bypass hello_world.ps1
+```
+
+# Anexo 2: ScheduledTask en Windows
 
 Las tareas programadas son lo que nos permiten hacer que nuestro backdoor se ejecute de forma periódica.
 
-## A) Forma básica en que esto sucede
+## A) Tareas Programadas
 
 
 ### 1) Se crea una acción programada 
@@ -67,18 +99,58 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "testest" -De
 + `-TaskName` es el nombre de la tarea
 + `-Description` la descripcion de la tarea
 
-## B) Ejemplos de acciones programadas
+## B) Ejemplos de tareas programadas
 
 Tarea que abre desde las 7am y luego cada minuto notepad
 ```powershell
 $action = New-ScheduledTaskAction -Execute "notepad.exe"
 $trigger = New-ScheduledTaskTrigger -Once -At 7am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
-Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "testest" -Description "Updates"
+Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "abre_notepad" -Description "Abre el notepad cada minuto"
 ```
 + Solamente abre uno nuevo cuando está cerrado
 
+Tarea que abre desde el momento en que se ejecuta el script y luego cada minuto la calculadora
+```powershell
+$action = New-ScheduledTaskAction -Execute "calc.exe"
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
+Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "abre_calc" -Description "Abre la calculadora cada minuto"
+```
+
+Tarea que ejecuta un script en la raíz
+``` powershell
+$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "powershell –ExecutionPolicy Bypass c:\main.ps1"
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
+Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "script" -Description "Updates"
+``` 
++ El problema de esto es que muestra la pantalla azul de powershell en que se ejecuta
+
+
+
+## C) Removiendo ScheduledTask en Windows
+Para remover las tareas programadas anteriormente solamente debemos seguir los siguientes pasos
+
+Listar y ubicar el nombre de la tarea programada que queramos borrar
+```
+Get-ScheduledTask
+```
+
+Removemos una tarea programada anteriormente
+``` powershell
+Unregister-ScheduledTask -TaskName "Your_Task_Name" 
+```
+
+Removemos una tarea programada anteriormente sin necesidad de confirmación
+``` powershell
+Unregister-ScheduledTask -TaskName "Your_Task_Name" -Confirm:$False
+```
 
 # Información complementaria
-Tareas Programadas
-[New-ScheduledTaskAction](https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtaskaction?view=win10-ps)
-[New-ScheduledTaskTrigger](https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtasktrigger?view=win10-ps)
+
+Ejecución de Scripts de powershell en modo Bypass
++ [Politica de Scripts Powershell en Windows 10](https://protegermipc.net/2018/11/22/permitir-la-ejecucion-de-scripts-powershell-en-windows-10/)
+
+Scheduled Task Windows
++ [PowerShell create a scheduled task - Vídeo de Youtube](https://www.youtube.com/watch?v=izlIJTmUW0o)
++ [New-ScheduledTaskAction](https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtaskaction?view=win10-ps)
++ [New-ScheduledTaskTrigger](https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtasktrigger?view=win10-ps)
++ [scheduled-task-with-daily-trigger-and-repetition-interval](https://stackoverflow.com/questions/20108886/scheduled-task-with-daily-trigger-and-repetition-interval)
