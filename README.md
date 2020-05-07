@@ -50,10 +50,12 @@ Aquí definimos qué es lo que activará nuestra tarea programada
 $trigger = New-ScheduledTaskTrigger -Once -At 7am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
 ```
 + `$trigger` es nuestra variable que almacenará nuestro disparador
-+ `-Once` -At 7am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
-+ `-At` 7am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
-+ `-RepetitionDuration`  (New-TimeSpan -Days 1)  
-+ `-RepetitionInterval`  (New-TimeSpan -Minutes 1)
++ `-Once` Ejecuta la tarea solamente una vez. En lugar de eso puede ser: `-Daily`, `-DaysOfWeek`, `-AtStartup`, `-AtLogOn`.
++ `-At` Especifica día y fecha para disparar la tarea
++ `-RepetitionDuration`  Especifica cuánto tiempo se repite el patrón de repetición después de que comienza la tarea.
++ `-RepetitionInterval` Especifica el tiempo que pasará antes de repetir nuevamente la tarea
++ `-RandomDelay` especifica cuánto tiempo de delay tendrá nuestra tarea(?)
++ (Ver más en Información complementaria)
 
 ### 3) Se registra la tarea
 Registramos la tarea
@@ -77,5 +79,6 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "testest" -De
 
 
 # Información complementaria
-
- [New-ScheduledTaskAction](https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtaskaction?view=win10-ps)
+Tareas Programadas
+[New-ScheduledTaskAction](https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtaskaction?view=win10-ps)
+[New-ScheduledTaskTrigger](https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtasktrigger?view=win10-ps)
