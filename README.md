@@ -1,7 +1,9 @@
 # Git Backdoor
+
 Este proyecto muestra la posibilidad de hacer uso de el servicio de github como un backdoor para Windows y Linux.
 
 # Funcionamiento
+
 A través de `installer_system.ext` nosotros instalaremos nuestro backdoor y lo ejecutaremos como una tarea programada.
 + Instala git
 + Clona el repositorio backdoor
@@ -13,14 +15,16 @@ Con lo anterior nosotros estaremos ejecutando periodicamente nuestro `main.ps1`.
 + Lanzará nuestros payloads
 
 # Entorno en el que ha sido probado
-El entorno en que ha sido probado este script fue
+
 + Windows 10
 + Debian 10
 
 # Anexo 1: Ejecución de Scripts de powershell en modo Bypass
+
 Powershell en Windows 10 tiene por defecto una politica de ejecución de scripts. 
 
 Para consultar dicha politica
+
 ``` powershell
 Get-ExecutionPolicy -list
 ```
@@ -34,17 +38,20 @@ Modos de la politica
 + `Undefined` no se establece directiva alguna. Esto se traduce normalmente en “Restricted”, suponiendo que en todos los ámbitos se haya dejado sin definir.
 
 Para cambiar la politica de ejecución de los scripts
+
 ``` powershell
 Set-ExecutionPolicy RemoteSigned
 ```
 
 Para cambiar la politica de ejecución de los scripts
+
 ``` powershell
 Set-ExecutionPolicy RemoteSigned -Force
 ```
 + Este modo forza el cambio
 
 Para ejecutar un script sin en modo Bypass
+
 ``` powershell
 powershell –ExecutionPolicy Bypass hello_world.ps1
 ```
@@ -90,7 +97,9 @@ $trigger = New-ScheduledTaskTrigger -Once -At 7am -RepetitionDuration  (New-Time
 + (Ver más en Información complementaria)
 
 ### 3) Se registra la tarea
+
 Registramos la tarea
+
 ``` powershell
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "testest" -Description "Updates"
 ```
@@ -101,7 +110,8 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "testest" -De
 
 ## B) Ejemplos de tareas programadas
 
-Tarea que abre desde las 7am y luego cada minuto notepad
+1.- Tarea que abre desde las 7am y luego cada minuto el programa notepad
+
 ```powershell
 $action = New-ScheduledTaskAction -Execute "notepad.exe"
 $trigger = New-ScheduledTaskTrigger -Once -At 7am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
@@ -109,37 +119,53 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "abre_notepad
 ```
 + Solamente abre uno nuevo cuando está cerrado
 
-Tarea que abre desde el momento en que se ejecuta el script y luego cada minuto la calculadora
+2.- Tarea que abre desde el momento en que se ejecuta el script y luego cada minuto la calculadora
+
 ```powershell
 $action = New-ScheduledTaskAction -Execute "calc.exe"
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "abre_calc" -Description "Abre la calculadora cada minuto"
 ```
 
-Tarea que ejecuta un script en la raíz
+3.- Tarea que ejecuta un script ubicado en la raíz
+
 ``` powershell
 $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "powershell –ExecutionPolicy Bypass c:\main.ps1"
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "script" -Description "Updates"
 ``` 
 + El problema de esto es que muestra la pantalla azul de powershell en que se ejecuta
++ Si tratamos de cambiar la ruta de nuestro script por una cuyo PATH contenga espacios, por ejemplo `$env:ProgramFiles` o `C:\Program Files\anything` nos lanzará un error ya que el Scheduled Task de Windows no procesará adecuadamente el espacio de `Program Files`.
 
 
+4.- Tarea que nos permite ejecutar un script en rutas que contienen espacios.
 
-## C) Removiendo ScheduledTask en Windows
+``` powershell
+$action = New-ScheduledTaskAction -Execute powershell.exe -Argument "Set-Location 'C:\Program Files\z'; powershell –ExecutionPolicy Bypass .\main.ps1 ;"
+
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
+
+Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"
+```
+
+
+## C) Removiendo Scheduled Task en Windows
 Para remover las tareas programadas anteriormente solamente debemos seguir los siguientes pasos
 
-Listar y ubicar el nombre de la tarea programada que queramos borrar
+1.- Listar y ubicar el nombre de la tarea programada que queramos borrar
+
 ```
 Get-ScheduledTask
 ```
 
-Removemos una tarea programada anteriormente
+2.- Removemos una tarea programada anteriormente
+
 ``` powershell
 Unregister-ScheduledTask -TaskName "Your_Task_Name" 
 ```
 
-Removemos una tarea programada anteriormente sin necesidad de confirmación
+3.- Removemos una tarea programada anteriormente sin necesidad de confirmación
+
 ``` powershell
 Unregister-ScheduledTask -TaskName "Your_Task_Name" -Confirm:$False
 ```
