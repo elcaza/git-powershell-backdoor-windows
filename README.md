@@ -2,6 +2,9 @@
 
 Este proyecto muestra la posibilidad de hacer uso de el servicio de github como un backdoor para Windows y Linux.
 
+# ¿Cómo usarlo?
+
+
 # Funcionamiento
 
 A través de `installer_system.ext` nosotros instalaremos nuestro backdoor y lo ejecutaremos como una tarea programada.
@@ -46,9 +49,10 @@ Set-ExecutionPolicy RemoteSigned
 Para cambiar la politica de ejecución de los scripts
 
 ``` powershell
-Set-ExecutionPolicy RemoteSigned -Force
+Set-ExecutionPolicy Bypass -Force
 ```
-+ Este modo forza el cambio
++ `Bypass` se sustituye por el modo de política deseado
++ `-Force` Forza el cambio
 
 Para ejecutar un script sin en modo Bypass
 
@@ -58,10 +62,9 @@ powershell –ExecutionPolicy Bypass hello_world.ps1
 
 # Anexo 2: Scheduled Task en Windows
 
-Las tareas programadas son lo que nos permiten hacer que nuestro backdoor se ejecute de forma periódica. Cabe destacar que Windows y su Scheduled Task no se llevan bien con los espacios en sus nombres de directorios QUE ELLOS MISMOS OCUPAN. Por ejemplo, `C:\Program Files (x86)` y `C:\Program Files`. **#HateWindows** por hacer innecesariamente complicado lo que es simple.
+Las tareas programadas son lo que nos permiten hacer que nuestro backdoor se ejecute de forma periódica. Cabe destacar que Windows y su Scheduled Task no se llevan bien con los espacios en sus nombres de directorios ¡QUE ELLOS MISMOS OCUPAN! Por ejemplo, `C:\Program Files (x86)` y `C:\Program Files`. **#HateWindows** por hacer innecesariamente complicado lo que es simple. (Más info ver el Anexo 2)
 
 ## A) Creación de tareas programadas
-
 
 ### 1) Se crea una acción programada 
 Se define qué es lo que nuestra tarea debe realizar
@@ -168,6 +171,20 @@ Unregister-ScheduledTask -TaskName "Your_Task_Name"
 
 ``` powershell
 Unregister-ScheduledTask -TaskName "Your_Task_Name" -Confirm:$False
+```
+
+## D) ¿Cuál era el problema que tenían los espacios de windows con Scheduled Task
+
+Esta es la versión simplificada de lo que no he podido lograr de manera sencilla. Si alguno logra resolverlo será bienvenido su pull request.
+
+``` powershell
+$argument_execute = "Set-Location $env:ProgramFiles ; pwd; sleep -s 5; powershell –ExecutionPolicy Bypass .\main.ps1;"
+
+$action = New-ScheduledTaskAction -Execute powershell.exe -Argument $argument_execute
+
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
+
+Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"
 ```
 
 # Información complementaria

