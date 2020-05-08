@@ -56,11 +56,11 @@ Para ejecutar un script sin en modo Bypass
 powershell –ExecutionPolicy Bypass hello_world.ps1
 ```
 
-# Anexo 2: ScheduledTask en Windows
+# Anexo 2: Scheduled Task en Windows
 
-Las tareas programadas son lo que nos permiten hacer que nuestro backdoor se ejecute de forma periódica.
+Las tareas programadas son lo que nos permiten hacer que nuestro backdoor se ejecute de forma periódica. Cabe destacar que Windows y su Scheduled Task no se llevan bien con los espacios en sus nombres de directorios QUE ELLOS MISMOS OCUPAN. Por ejemplo, `C:\Program Files (x86)` y `C:\Program Files`. **#HateWindows** por hacer innecesariamente complicado lo que es simple.
 
-## A) Tareas Programadas
+## A) Creación de tareas programadas
 
 
 ### 1) Se crea una acción programada 
@@ -141,7 +141,7 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "script" -Des
 4.- Tarea que nos permite ejecutar un script en rutas que contienen espacios.
 
 ``` powershell
-$action = New-ScheduledTaskAction -Execute powershell.exe -Argument "Set-Location 'C:\Program Files\z'; powershell –ExecutionPolicy Bypass .\main.ps1 ;"
+$action = New-ScheduledTaskAction -Execute powershell.exe -Argument "Set-Location 'C:\Program Files (x86)\backdoor_program'; powershell –ExecutionPolicy Bypass .\main.ps1;"
 
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
 

