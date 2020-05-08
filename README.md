@@ -57,7 +57,7 @@ Set-ExecutionPolicy Bypass -Force
 Para ejecutar un script sin en modo Bypass
 
 ``` powershell
-powershell –ExecutionPolicy Bypass hello_world.ps1
+powershell -ExecutionPolicy Bypass hello_world.ps1
 ```
 
 # Anexo 2: Scheduled Task en Windows
@@ -133,7 +133,7 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "abre_calc" -
 3.- Tarea que ejecuta un script ubicado en la raíz
 
 ``` powershell
-$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "powershell –ExecutionPolicy Bypass c:\main.ps1"
+$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "powershell -ExecutionPolicy Bypass c:\main.ps1"
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "script" -Description "Updates"
 ``` 
@@ -144,7 +144,7 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "script" -Des
 4.- Tarea que nos permite ejecutar un script en rutas que contienen espacios.
 
 ``` powershell
-$action = New-ScheduledTaskAction -Execute powershell.exe -Argument "Set-Location 'C:\Program Files (x86)\backdoor_program'; powershell –ExecutionPolicy Bypass .\main.ps1;"
+$action = New-ScheduledTaskAction -Execute powershell.exe -Argument "Set-Location 'C:\Program Files (x86)\backdoor_program'; powershell -ExecutionPolicy Bypass .\main.ps1;"
 
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
 
@@ -178,7 +178,7 @@ Unregister-ScheduledTask -TaskName "Your_Task_Name" -Confirm:$False
 Esta es la versión simplificada de lo que no he podido lograr de manera sencilla. Si alguno logra resolverlo será bienvenido su pull request.
 
 ``` powershell
-$argument_execute = "Set-Location $env:ProgramFiles ; pwd; sleep -s 5; powershell –ExecutionPolicy Bypass .\main.ps1;"
+$argument_execute = "Set-Location $env:ProgramFiles ; pwd; sleep -s 5; powershell -ExecutionPolicy Bypass .\main.ps1;"
 
 $action = New-ScheduledTaskAction -Execute powershell.exe -Argument $argument_execute
 
