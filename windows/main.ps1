@@ -1,4 +1,7 @@
 "Ejecutando script"
 $payload = "hello_world.ps1"
 
-powershell –ExecutionPolicy Bypass $payload
+calc.exe
+powershell -ExecutionPolicy Bypass payloads\$payload
+"Listo"
+sleep -s 2
