@@ -189,11 +189,15 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -De
 
 # Información complementaria
 
-Ejecución de Scripts de powershell en modo Bypass
+#### Ejecución de Scripts de powershell en modo Bypass
 + [Politica de Scripts Powershell en Windows 10](https://protegermipc.net/2018/11/22/permitir-la-ejecucion-de-scripts-powershell-en-windows-10/)
 
-Scheduled Task Windows
+#### Scheduled Task Windows
 + [PowerShell create a scheduled task - Vídeo de Youtube](https://www.youtube.com/watch?v=izlIJTmUW0o)
 + [New-ScheduledTaskAction](https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtaskaction?view=win10-ps)
 + [New-ScheduledTaskTrigger](https://docs.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtasktrigger?view=win10-ps)
 + [scheduled-task-with-daily-trigger-and-repetition-interval](https://stackoverflow.com/questions/20108886/scheduled-task-with-daily-trigger-and-repetition-interval)
+
+#### Hacer que nuestro backdoor corra con privilegios de administrador
++ [UAC: User Account Control Settings](https://www.tenforums.com/tutorials/3577-change-user-account-control-uac-settings-windows-10-a.html)
++ [Script mágico](https://www.tenforums.com/tutorials/57690-create-elevated-shortcut-without-uac-prompt-windows-10-a.html)
